@@ -536,9 +536,11 @@ th, td {
 						dataType: "json",
 						success: function (response) {
 							if (response && response.error) {
-								$("#air-live-note").text(response.error);
+								var serverMessage = response.error + (response.hint ? " (" + response.hint + ")" : "");
+								$("#air-live-note").text(serverMessage);
 								renderError("departure-list", "Live departures are unavailable right now.");
 								renderError("arrival-list", "Live arrivals are unavailable right now.");
+								$("#airline-list").html("<li>" + escapeHtml(response.error) + "</li>");
 								$("#air-load-btn").prop("disabled", false).text("Retry Live Airport Data");
 								return;
 							}
@@ -559,14 +561,18 @@ th, td {
 							renderAirlines(response.airlines || []);
 							renderFlights("departure-list", departures, "departures");
 							renderFlights("arrival-list", arrivals, "arrivals");
-							$("#air-live-note").text("Live airport information is being served from the local aviation server.");
+							$("#air-live-note").text("Live airport information loaded successfully.");
 							$("#air-load-btn").prop("disabled", false).text("Refresh Live Airport Data");
 						},
-						error: function () {
-							$("#air-live-note").text(runtimeHint);
+						error: function (xhr) {
+							var apiError = "";
+							if (xhr && xhr.responseJSON && xhr.responseJSON.error) {
+								apiError = xhr.responseJSON.error;
+							}
+							$("#air-live-note").text(apiError || runtimeHint);
 							renderError("departure-list", "Live departures are unavailable right now.");
 							renderError("arrival-list", "Live arrivals are unavailable right now.");
-							$("#airline-list").html("<li>Airline data is unavailable right now.</li>");
+							$("#airline-list").html("<li>" + escapeHtml(apiError || "Airline data is unavailable right now.") + "</li>");
 							$("#air-load-btn").prop("disabled", false).text("Retry Live Airport Data");
 						}
 					});
