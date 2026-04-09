@@ -1,0 +1,129 @@
+{
+  "info": {
+    "name": "Chandigarh Aviation Server",
+    "_postman_id": "0e2b4f79-90ea-4de0-a67e-0d4d5f8ee3b9",
+    "description": "Local endpoints for Chandigarh Airport overview, flights, airlines, and health checks.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Health",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3000/api/health",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "api",
+            "health"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Airport Overview",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3000/api/airport/overview",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "api",
+            "airport",
+            "overview"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Airport Departures",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3000/api/airport/departures",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "api",
+            "airport",
+            "departures"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Airport Arrivals",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3000/api/airport/arrivals",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "api",
+            "airport",
+            "arrivals"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Airport Airlines",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3000/api/airport/airlines",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "api",
+            "airport",
+            "airlines"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Airport Summary",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3000/api/airport/summary",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "api",
+            "airport",
+            "summary"
+          ]
+        }
+      }
+    }
+  ]
+}

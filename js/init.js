@@ -109,8 +109,61 @@
 	});
 
 	$(function() {
-		
-		// jQuery ready stuff.
+		function initGlobalScrollReveal() {
+			var targets = [];
+			var seen = new Set();
+			var allowMotion = !window.matchMedia || !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+			function addTarget(element) {
+				if (!element || seen.has(element))
+					return;
+				if (element.closest('#header, #footer'))
+					return;
+				seen.add(element);
+				targets.push(element);
+			}
+
+			addTarget(document.querySelector('#banner .inner'));
+
+			document.querySelectorAll('section.wrapper').forEach(function(section) {
+				addTarget(section.querySelector('header.major'));
+				addTarget(section.querySelector('.container'));
+				section.querySelectorAll('.row > div, section.special, article.special, table, form').forEach(addTarget);
+			});
+
+			if (!targets.length)
+				return;
+
+			targets.forEach(function(target, index) {
+				target.classList.add('scroll-fade-up');
+				target.classList.add('scroll-delay-' + (index % 4));
+			});
+
+			if (!allowMotion || !('IntersectionObserver' in window)) {
+				targets.forEach(function(target) {
+					target.classList.add('is-visible');
+				});
+				return;
+			}
+
+			var observer = new IntersectionObserver(function(entries) {
+				entries.forEach(function(entry) {
+					if (entry.isIntersecting) {
+						entry.target.classList.add('is-visible');
+						observer.unobserve(entry.target);
+					}
+				});
+			}, {
+				threshold: 0.16,
+				rootMargin: '0px 0px -40px 0px'
+			});
+
+			targets.forEach(function(target) {
+				observer.observe(target);
+			});
+		}
+
+		initGlobalScrollReveal();
 		
 	});
 
