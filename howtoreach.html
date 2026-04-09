@@ -15,7 +15,7 @@
 			<link rel="stylesheet" href="css/style.css" />
 			<link rel="stylesheet" href="css/style-xlarge.css" />
 		</noscript>
-		<style>
+<style>
 table {
     width:50%;
 }
@@ -26,6 +26,184 @@ table, th, td {
 th, td {
     padding: 5px;
     text-align: left;
+}
+
+.air-live-wrap {
+    margin-top: 2em;
+}
+
+.air-reveal {
+    opacity: 0;
+    transform: translateY(28px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+.air-reveal.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.air-stagger-1 {
+    transition-delay: 0.08s;
+}
+
+.air-stagger-2 {
+    transition-delay: 0.16s;
+}
+
+.air-stagger-3 {
+    transition-delay: 0.24s;
+}
+
+.air-hero-copy {
+    margin-bottom: 1.2em;
+}
+
+.air-stats-grid,
+.air-facilities-grid,
+.air-live-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5em;
+}
+
+.air-stat-card,
+.air-live-grid {
+    margin-top: 1.2em;
+}
+
+.air-stat-card,
+.air-facility-card,
+.air-live-card {
+    flex: 1 1 320px;
+    border: 1px solid #d9d9d9;
+    border-radius: 6px;
+    padding: 1.2em;
+    background: #fafafa;
+}
+
+.air-stat-card strong {
+    display: block;
+    font-size: 1.8em;
+    line-height: 1.2;
+    color: #1d3557;
+}
+
+.air-stat-card span {
+    color: #666;
+    font-size: 0.95em;
+}
+
+.air-section-title,
+.air-live-card h4 {
+    margin-bottom: 0.8em;
+}
+
+.air-chip-list,
+.air-live-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.air-chip-list li {
+    display: inline-block;
+    margin: 0 0.45em 0.45em 0;
+    padding: 0.35em 0.75em;
+    border-radius: 999px;
+    background: #edf4ff;
+    color: #1d3557;
+    font-size: 0.92em;
+    opacity: 0;
+    transform: translateY(14px);
+    animation: none;
+}
+
+.air-chip-list.is-visible li {
+    animation: airChipReveal 0.45s ease forwards;
+}
+
+.air-chip-list.is-visible li:nth-child(2) { animation-delay: 0.05s; }
+.air-chip-list.is-visible li:nth-child(3) { animation-delay: 0.1s; }
+.air-chip-list.is-visible li:nth-child(4) { animation-delay: 0.15s; }
+.air-chip-list.is-visible li:nth-child(5) { animation-delay: 0.2s; }
+.air-chip-list.is-visible li:nth-child(6) { animation-delay: 0.25s; }
+
+@keyframes airChipReveal {
+    from {
+        opacity: 0;
+        transform: translateY(14px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.air-live-list li {
+    padding: 0.8em 0;
+    border-top: 1px solid #e4e4e4;
+}
+
+.air-live-list li:first-child {
+    border-top: 0;
+    padding-top: 0;
+}
+
+.air-live-line {
+    display: block;
+    margin-bottom: 0.2em;
+}
+
+.air-live-meta {
+    color: #666;
+    font-size: 0.95em;
+}
+
+.air-live-status {
+    display: inline-block;
+    margin-top: 0.35em;
+    padding: 0.15em 0.55em;
+    border-radius: 999px;
+    background: #ececec;
+    font-size: 0.85em;
+    text-transform: capitalize;
+}
+
+.air-live-note {
+    margin-top: 1em;
+    color: #666;
+    font-size: 0.95em;
+}
+
+.air-action-row {
+    margin-top: 0.8em;
+}
+
+.air-meta-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 0.75em 1em;
+    margin-top: 1.2em;
+}
+
+.air-meta-item {
+    padding: 0.85em 1em;
+    background: #f7f7f7;
+    border-radius: 6px;
+}
+
+.air-meta-label {
+    display: block;
+    color: #666;
+    font-size: 0.9em;
+}
+
+.air-meta-value {
+    display: block;
+    color: #111;
+    font-weight: bold;
 }
 </style>
 	</head>
@@ -95,8 +273,65 @@ th, td {
 				</table>
 				<hr class="major" />
 				<h3>By Air</h3>
-				<p>The airport is 11 km from downtown. Taxis are available for Airport transfer. Indian Airlines, Jet Airways and Air Deccan connects Chandigarh with New Delhi the National Capital. Chandigarh Tourism has well maintained Tourist Information Centre at the Airport.</p>
-				<a href="#" class="image fit"><img src="images/air.jpg" alt="By Air Chandigarh" /></a>
+				<p class="air-hero-copy">Chandigarh Airport is around 11 km from the city center and connects travelers to major domestic destinations. This section now shows live airport activity together with airline information.</p>
+				<div class="air-live-wrap">
+					<h4 class="air-section-title air-reveal">Chandigarh Airport Overview</h4>
+					<div class="air-stats-grid air-reveal air-stagger-1">
+						<div class="air-stat-card">
+							<strong id="air-departure-count">--</strong>
+							<span>Live departures</span>
+						</div>
+						<div class="air-stat-card">
+							<strong id="air-arrival-count">--</strong>
+							<span>Live arrivals</span>
+						</div>
+						<div class="air-stat-card">
+							<strong id="air-airline-count">--</strong>
+							<span>Active airlines</span>
+						</div>
+					</div>
+					<div class="air-meta-grid air-reveal air-stagger-2">
+						<div class="air-meta-item">
+							<span class="air-meta-label">Airport</span>
+							<span id="airport-name" class="air-meta-value">Chandigarh Airport</span>
+						</div>
+						<div class="air-meta-item">
+							<span class="air-meta-label">IATA Code</span>
+							<span id="airport-code" class="air-meta-value">IXC</span>
+						</div>
+						<div class="air-meta-item">
+							<span class="air-meta-label">City Access</span>
+							<span id="airport-distance" class="air-meta-value">11 km from downtown</span>
+						</div>
+						<div class="air-meta-item">
+							<span class="air-meta-label">Updated</span>
+							<span id="airport-updated" class="air-meta-value">Loading...</span>
+						</div>
+					</div>
+					<h4 class="air-section-title air-reveal">Airlines Operating Today</h4>
+					<ul id="airline-list" class="air-chip-list air-reveal air-stagger-3">
+						<li>Loading airlines...</li>
+					</ul>
+					<h4 class="air-section-title air-reveal">Live Chandigarh Airport Flights</h4>
+					<div class="air-live-grid">
+						<div class="air-live-card air-reveal air-stagger-1">
+							<h4>Departures</h4>
+							<ul id="departure-list" class="air-live-list">
+								<li>Loading live departures...</li>
+							</ul>
+						</div>
+						<div class="air-live-card air-reveal air-stagger-2">
+							<h4>Arrivals</h4>
+							<ul id="arrival-list" class="air-live-list">
+								<li>Loading live arrivals...</li>
+							</ul>
+						</div>
+					</div>
+					<div class="air-action-row">
+						<button id="air-load-btn" type="button" class="button alt small">Load Live Airport Data</button>
+					</div>
+					<p id="air-live-note" class="air-live-note">To save free API quota, live airport data loads only when you click the button.</p>
+				</div>
 				</div>
 			</section>
 
@@ -140,5 +375,201 @@ th, td {
 				</div>
 			</footer>
 
+		<script>
+			(function ($) {
+				var maxFlights = 6;
+
+				function formatTime(value) {
+					if (!value) {
+						return "Time not available";
+					}
+
+					var date = new Date(value);
+					if (isNaN(date.getTime())) {
+						return value;
+					}
+
+					return date.toLocaleString("en-IN", {
+						day: "2-digit",
+						month: "short",
+						hour: "2-digit",
+						minute: "2-digit"
+					});
+				}
+
+				function getFlightItems(payload) {
+					if (!payload) {
+						return [];
+					}
+
+					return payload.data || payload.results || [];
+				}
+
+				function escapeHtml(value) {
+					return String(value || "")
+						.replace(/&/g, "&amp;")
+						.replace(/</g, "&lt;")
+						.replace(/>/g, "&gt;")
+						.replace(/"/g, "&quot;")
+						.replace(/'/g, "&#39;");
+				}
+
+				function formatAirportLabel(airport, fallbackName) {
+					if (!airport) {
+						return fallbackName || "Airport unavailable";
+					}
+
+					var airportName = airport.airport || fallbackName || airport.iata || "Airport unavailable";
+					var airportCode = airport.iata ? " (" + airport.iata + ")" : "";
+
+					return airportName + airportCode;
+				}
+
+				function renderFlights(targetId, flights, type) {
+					var $target = $("#" + targetId);
+
+					if (!flights.length) {
+						$target.html("<li>No live " + type + " found right now.</li>");
+						return;
+					}
+
+					var html = flights.slice(0, maxFlights).map(function (flight) {
+						var airline = flight.airline && (flight.airline.name || flight.airline.airline_name) || "Unknown airline";
+						var flightCode = flight.flight && (flight.flight.iata || flight.flight.number) || "Flight unavailable";
+						var chandigarhLabel = "Chandigarh Airport (IXC)";
+						var routeLabel = type === "departures"
+							? chandigarhLabel + " -> " + formatAirportLabel(flight.arrival, "Destination unavailable")
+							: formatAirportLabel(flight.departure, "Origin unavailable") + " -> " + chandigarhLabel;
+						var terminalInfo = type === "departures"
+							? (flight.departure && flight.departure.terminal)
+							: (flight.arrival && flight.arrival.terminal);
+						var gateInfo = type === "departures"
+							? (flight.departure && flight.departure.gate)
+							: (flight.arrival && flight.arrival.gate);
+						var scheduledTime = type === "departures"
+							? (flight.departure && (flight.departure.scheduled || flight.departure.scheduledTime || flight.departure.estimated))
+							: (flight.arrival && (flight.arrival.scheduled || flight.arrival.scheduledTime || flight.arrival.estimated));
+						var status = flight.flight_status || flight.status || "scheduled";
+						var extra = [];
+
+						if (terminalInfo) {
+							extra.push("Terminal " + terminalInfo);
+						}
+
+						if (gateInfo) {
+							extra.push("Gate " + gateInfo);
+						}
+
+						return [
+							"<li>",
+							"<strong class='air-live-line'>" + escapeHtml(airline) + "</strong>",
+							"<span class='air-live-line'>" + escapeHtml(flightCode) + " • " + escapeHtml(routeLabel) + "</span>",
+							"<span class='air-live-line air-live-meta'>Scheduled: " + escapeHtml(formatTime(scheduledTime)) + "</span>",
+							extra.length ? "<span class='air-live-line air-live-meta'>" + escapeHtml(extra.join(" • ")) + "</span>" : "",
+							"<span class='air-live-status'>" + escapeHtml(status) + "</span>",
+							"</li>"
+						].join("");
+					}).join("");
+
+					$target.html(html);
+				}
+
+				function renderError(targetId, message) {
+					$("#" + targetId).html("<li>" + message + "</li>");
+				}
+
+				function renderAirlines(airlines) {
+					var $target = $("#airline-list");
+
+					if (!airlines || !airlines.length) {
+						$target.html("<li>No airlines found right now.</li>");
+						return;
+					}
+
+					var html = airlines.map(function (airline) {
+						return "<li>" + escapeHtml(airline.name + (airline.iata ? " (" + airline.iata + ")" : "")) + "</li>";
+					}).join("");
+
+					$target.html(html);
+				}
+
+				function initializeAirportScrollAnimations() {
+					var elements = document.querySelectorAll(".air-reveal");
+
+					if (!elements.length) {
+						return;
+					}
+
+					if (!("IntersectionObserver" in window)) {
+						Array.prototype.forEach.call(elements, function (element) {
+							element.classList.add("is-visible");
+						});
+						return;
+					}
+
+					var observer = new IntersectionObserver(function (entries) {
+						entries.forEach(function (entry) {
+							if (entry.isIntersecting) {
+								entry.target.classList.add("is-visible");
+								observer.unobserve(entry.target);
+							}
+						});
+					}, {
+						threshold: 0.15,
+						rootMargin: "0px 0px -40px 0px"
+					});
+
+					Array.prototype.forEach.call(elements, function (element) {
+						observer.observe(element);
+					});
+				}
+
+				function loadAirportOverview() {
+					$("#air-load-btn").prop("disabled", true).text("Loading...");
+					$.ajax({
+						url: "/api/airport/overview",
+						dataType: "json",
+						success: function (response) {
+							if (response && response.error) {
+								$("#air-live-note").text(response.error);
+								renderError("departure-list", "Live departures are unavailable right now.");
+								renderError("arrival-list", "Live arrivals are unavailable right now.");
+								$("#air-load-btn").prop("disabled", false).text("Retry Live Airport Data");
+								return;
+							}
+
+							var departures = getFlightItems(response.departures);
+							var arrivals = getFlightItems(response.arrivals);
+							var airport = response.airport || {};
+							var summary = response.summary || {};
+
+							$("#air-departure-count").text(summary.live_departures != null ? summary.live_departures : departures.length);
+							$("#air-arrival-count").text(summary.live_arrivals != null ? summary.live_arrivals : arrivals.length);
+							$("#air-airline-count").text(summary.active_airlines != null ? summary.active_airlines : (response.airlines || []).length);
+							$("#airport-name").text(airport.name || "Chandigarh Airport");
+							$("#airport-code").text(airport.iata || "IXC");
+							$("#airport-distance").text((airport.distance_from_city_km || 11) + " km from downtown");
+							$("#airport-updated").text(formatTime(response.updated_at));
+
+							renderAirlines(response.airlines || []);
+							renderFlights("departure-list", departures, "departures");
+							renderFlights("arrival-list", arrivals, "arrivals");
+							$("#air-live-note").text("Live airport information is being served from the local aviation server.");
+							$("#air-load-btn").prop("disabled", false).text("Refresh Live Airport Data");
+						},
+						error: function () {
+							$("#air-live-note").text("Could not reach the local aviation server. Start server.js to load live airport data.");
+							renderError("departure-list", "Live departures are unavailable right now.");
+							renderError("arrival-list", "Live arrivals are unavailable right now.");
+							$("#airline-list").html("<li>Start the local server to load airlines.</li>");
+							$("#air-load-btn").prop("disabled", false).text("Retry Live Airport Data");
+						}
+					});
+				}
+
+				initializeAirportScrollAnimations();
+				$("#air-load-btn").on("click", loadAirportOverview);
+			})(jQuery);
+		</script>
 	</body>
 </html>
