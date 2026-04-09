@@ -525,6 +525,11 @@ th, td {
 				}
 
 				function loadAirportOverview() {
+					var isLocalHost = location.hostname === "localhost" || location.hostname === "127.0.0.1";
+					var runtimeHint = isLocalHost
+						? "Could not reach the local aviation server. Start server.js to load live airport data."
+						: "Could not reach deployed airport API. Check Vercel env var AVIATIONSTACK_API_KEY and redeploy.";
+
 					$("#air-load-btn").prop("disabled", true).text("Loading...");
 					$.ajax({
 						url: "/api/airport/overview",
@@ -558,10 +563,10 @@ th, td {
 							$("#air-load-btn").prop("disabled", false).text("Refresh Live Airport Data");
 						},
 						error: function () {
-							$("#air-live-note").text("Could not reach the local aviation server. Start server.js to load live airport data.");
+							$("#air-live-note").text(runtimeHint);
 							renderError("departure-list", "Live departures are unavailable right now.");
 							renderError("arrival-list", "Live arrivals are unavailable right now.");
-							$("#airline-list").html("<li>Start the local server to load airlines.</li>");
+							$("#airline-list").html("<li>Airline data is unavailable right now.</li>");
 							$("#air-load-btn").prop("disabled", false).text("Retry Live Airport Data");
 						}
 					});
