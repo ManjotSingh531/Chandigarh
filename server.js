@@ -42,7 +42,7 @@ function loadEnvFile() {
 loadEnvFile();
 
 const PORT = process.env.PORT || 3000;
-const HOST = process.env.HOST || "127.0.0.1";
+const HOST = process.env.HOST || "0.0.0.0";
 const API_KEY = process.env.AVIATIONSTACK_API_KEY || "";
 const AIRPORT_CODE = "IXC";
 const ROOT_DIR = __dirname;
