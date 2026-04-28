@@ -2,6 +2,8 @@ const http = require("http");
 const https = require("https");
 const fs = require("fs");
 const path = require("path");
+const querystring = require("querystring");
+const nodemailer = require("nodemailer");
 const { URL } = require("url");
 
 function loadEnvFile() {
@@ -44,6 +46,9 @@ loadEnvFile();
 const PORT = process.env.PORT || 3000;
 const HOST = process.env.HOST || "0.0.0.0";
 const API_KEY = process.env.AVIATIONSTACK_API_KEY || "";
+const SMTP_USER = process.env.SMTP_USER || "";
+const SMTP_PASS = process.env.SMTP_PASS || "";
+const CONTACT_TO_EMAIL = process.env.CONTACT_TO_EMAIL || "";
 const AIRPORT_CODE = "IXC";
 const ROOT_DIR = __dirname;
 
@@ -51,10 +56,64 @@ function sendJson(res, statusCode, payload) {
   res.writeHead(statusCode, {
     "Content-Type": "application/json; charset=utf-8",
     "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "GET, OPTIONS",
+    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type"
   });
   res.end(JSON.stringify(payload, null, 2));
+}
+
+function sendRedirect(res, location) {
+  res.writeHead(302, { Location: location });
+  res.end();
+}
+
+function collectBody(req, maxBytes = 1024 * 1024) {
+  return new Promise((resolve, reject) => {
+    let size = 0;
+    let body = "";
+
+    req.on("data", (chunk) => {
+      size += chunk.length;
+      if (size > maxBytes) {
+        reject(new Error("Request body too large"));
+        req.destroy();
+        return;
+      }
+      body += chunk.toString("utf8");
+    });
+
+    req.on("end", () => resolve(body));
+    req.on("error", reject);
+  });
+}
+
+async function sendContactEmail({ name, email, subject, message }) {
+  if (!SMTP_USER || !SMTP_PASS || !CONTACT_TO_EMAIL) {
+    return false;
+  }
+
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: SMTP_USER,
+      pass: SMTP_PASS
+    }
+  });
+
+  await transporter.sendMail({
+    from: SMTP_USER,
+    to: CONTACT_TO_EMAIL,
+    replyTo: email,
+    subject: `[Contact Form] ${subject}`,
+    html:
+      `<h3>New Contact Message</h3>` +
+      `<p><strong>Name:</strong> ${name}</p>` +
+      `<p><strong>Email:</strong> ${email}</p>` +
+      `<p><strong>Subject:</strong> ${subject}</p>` +
+      `<p><strong>Message:</strong><br>${message.replace(/\n/g, "<br>")}</p>`
+  });
+
+  return true;
 }
 
 function sendFile(res, filePath) {
@@ -266,6 +325,43 @@ const server = http.createServer(async (req, res) => {
 
   if (pathname === "/api/health") {
     sendJson(res, 200, { ok: true, service: "chandigarh-aviation-server" });
+    return;
+  }
+
+  if ((pathname === "/api/contact" || pathname === "/sendmail.php") && req.method === "POST") {
+    try {
+      const rawBody = await collectBody(req);
+      const form = querystring.parse(rawBody);
+
+      const name = String(form.name || "").trim();
+      const email = String(form.email || "").trim();
+      const subject = String(form.subject || "").trim();
+      const message = String(form.message || "").trim();
+
+      if (!name || !email || !subject || !message) {
+        sendRedirect(res, "/contact.html?sent=0");
+        return;
+      }
+
+      const entry =
+        `\n---\n` +
+        `time: ${new Date().toISOString()}\n` +
+        `name: ${name}\n` +
+        `email: ${email}\n` +
+        `subject: ${subject}\n` +
+        `message: ${message.replace(/\r?\n/g, " ")}\n`;
+
+      fs.appendFile(path.join(ROOT_DIR, "contact-submissions.log"), entry, async () => {
+        try {
+          const emailed = await sendContactEmail({ name, email, subject, message });
+          sendRedirect(res, emailed ? "/contact.html?sent=1" : "/contact.html?sent=2");
+        } catch (error) {
+          sendRedirect(res, "/contact.html?sent=2");
+        }
+      });
+    } catch (error) {
+      sendRedirect(res, "/contact.html?sent=0");
+    }
     return;
   }
 

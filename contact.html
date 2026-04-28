@@ -16,14 +16,123 @@
 			<link rel="stylesheet" href="css/style-xlarge.css" />
 		</noscript>
 		<style>
-table {
-    width:50%;
-}
-th, td {
-    padding: 5px;
-    text-align: left;
-}
-</style>
+			#main.wrapper.style1 {
+				background: linear-gradient(180deg, #f5f8fc 0%, #eef3f9 100%);
+			}
+			.contact-card {
+				max-width: 960px;
+				margin: 0 auto;
+				padding: 28px 24px;
+				background: #ffffff;
+				border: 1px solid #dde5ef;
+				border-radius: 14px;
+				box-shadow: 0 12px 30px rgba(31, 49, 73, 0.08);
+			}
+			.contact-status {
+				display: none;
+				margin: 0 0 16px 0;
+				padding: 12px 14px;
+				border-radius: 10px;
+				font-weight: 600;
+			}
+			.contact-status.success {
+				display: block;
+				background: #ebfff1;
+				border: 1px solid #9fd9b0;
+				color: #22653a;
+			}
+			.contact-status.error {
+				display: block;
+				background: #fff1f1;
+				border: 1px solid #e6a2a2;
+				color: #812f2f;
+			}
+			table {
+				width: 100%;
+				margin: 0;
+				border-collapse: collapse;
+				background: #ffffff;
+			}
+			th, td {
+				padding: 16px 20px;
+				text-align: left;
+				vertical-align: top;
+				background: #ffffff;
+				border-top: 1px solid #e5e5e5;
+			}
+			tr:last-child td {
+				border-bottom: 1px solid #e5e5e5;
+			}
+			th {
+				width: 160px;
+				color: #3f4954;
+				font-size: 1.1em;
+				font-weight: 600;
+			}
+			input[type="text"],
+			input[type="email"],
+			textarea {
+				width: 100%;
+				box-sizing: border-box;
+				background: #ffffff;
+				border: 1px solid #d7dce1;
+				border-radius: 10px;
+				color: #444;
+			}
+			input[type="text"],
+			input[type="email"] {
+				height: 56px;
+				padding: 0 16px;
+			}
+			textarea {
+				min-height: 220px;
+				padding: 14px 16px;
+				resize: vertical;
+			}
+			input[type="text"]:focus,
+			input[type="email"]:focus,
+			textarea:focus {
+				border-color: #5a8dee;
+				box-shadow: 0 0 0 3px rgba(90, 141, 238, 0.15);
+			}
+			.contact-submit {
+				text-align: center;
+				background: #ffffff;
+			}
+			.contact-submit input[type="submit"] {
+				background: linear-gradient(135deg, #0f2238 0%, #1d3d63 100%);
+				border: 0;
+				color: #fff;
+				letter-spacing: 2px;
+				font-weight: 600;
+				padding: 0 34px;
+				height: 54px;
+				border-radius: 10px;
+				transition: transform 0.2s ease, box-shadow 0.2s ease;
+			}
+			.contact-submit input[type="submit"]:hover {
+				transform: translateY(-1px);
+				box-shadow: 0 10px 20px rgba(15, 34, 56, 0.22);
+			}
+			@media screen and (max-width: 768px) {
+				.contact-card {
+					padding: 16px 12px;
+				}
+				th,
+				td {
+					display: block;
+					width: 100%;
+					padding: 10px 12px;
+					border-top: none;
+				}
+				tr {
+					border-top: 1px solid #e5e5e5;
+				}
+				tr:last-child {
+					border-bottom: 1px solid #e5e5e5;
+				}
+			}
+		</style>
 	</head>
 	<body id="top">
 
@@ -50,17 +159,42 @@ th, td {
 					<h2>Contact Us</h2>
 				</header>
 				<div class="container">
-				<form name="contactform" action="sendmail.php" method="post">
+				<div class="contact-card">
+				<div id="contact-status" class="contact-status"></div>
+				<form name="contactform" action="/api/contact" method="post">
 				<table>
 				<tr><th>Name</th><td><input type="text" name="name" placeholder="Enter name" required></td></tr>
 				<tr><th>Email</th><td><input type="email" name="email" placeholder="Enter email" required></td></tr>
 				<tr><th>Subject</th><td><input type="text" name="subject" placeholder="Enter Subject" required></td></tr>
 				<tr><th>Message</th><td><textarea name="message" rows="5" cols="50" placeholder="Enter Message" required></textarea></td></tr>
-				<tr><td></td><td><input type="submit" value="Send Message"></td></tr>
+				<tr><td></td><td class="contact-submit"><input type="submit" value="Send Message"></td></tr>
 				</table>
 				</form>
 				</div>
+				</div>
 			</section>
+		<script>
+			(function () {
+				var status = document.getElementById("contact-status");
+				var params = new URLSearchParams(window.location.search);
+				var sent = params.get("sent");
+				if (!status || sent === null) return;
+				if (sent === "1") {
+					status.className = "contact-status success";
+					status.textContent = "Message sent successfully to your email inbox.";
+				} else if (sent === "2") {
+					status.className = "contact-status error";
+					status.textContent = "Message saved, but email delivery is not configured yet.";
+				} else {
+					status.className = "contact-status error";
+					status.textContent = "Unable to send message. Please fill all fields and try again.";
+				}
+
+				params.delete("sent");
+				var next = window.location.pathname + (params.toString() ? "?" + params.toString() : "") + window.location.hash;
+				window.history.replaceState({}, "", next);
+			})();
+		</script>
 
 		<!-- Footer -->
 			<footer id="footer">

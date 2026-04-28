@@ -1,0 +1,25 @@
+{
+  "name": "chandigarh",
+  "version": "1.0.0",
+  "description": "Run the project with:",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ManjotSingh531/Chandigarh.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/ManjotSingh531/Chandigarh/issues"
+  },
+  "homepage": "https://github.com/ManjotSingh531/Chandigarh#readme",
+  "dependencies": {
+    "nodemailer": "^8.0.7"
+  }
+}
