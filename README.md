@@ -22,6 +22,23 @@ cp .env.example .env
 
 Then edit `.env` and add your real `AVIATIONSTACK_API_KEY`.
 
+To receive Contact form emails via Gmail SMTP, also set:
+
+```bash
+SMTP_USER=your_gmail_address@gmail.com
+SMTP_PASS=your_gmail_app_password
+CONTACT_TO_EMAIL=your_email@example.com
+```
+
+Create Gmail App Password:
+
+1. Google Account -> Security
+2. Enable 2-Step Verification
+3. App passwords -> create one for Mail
+4. Use that generated password as `SMTP_PASS`
+
+If email is not configured, submissions are still saved in `contact-submissions.log`.
+
 Start server:
 
 ```bash
