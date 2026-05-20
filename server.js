@@ -52,6 +52,27 @@ const CONTACT_TO_EMAIL = process.env.CONTACT_TO_EMAIL || "";
 const AIRPORT_CODE = "IXC";
 const ROOT_DIR = __dirname;
 
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function appendContactLog(text) {
+  fs.appendFile(path.join(ROOT_DIR, "contact-submissions.log"), text, () => {});
+}
+
+function didAcceptRecipient(info, recipientEmail) {
+  const accepted = Array.isArray(info && info.accepted) ? info.accepted.map((item) => String(item).toLowerCase()) : [];
+  const rejected = Array.isArray(info && info.rejected) ? info.rejected.map((item) => String(item).toLowerCase()) : [];
+  const normalizedTarget = String(recipientEmail || "").toLowerCase();
+
+  return accepted.includes(normalizedTarget) && !rejected.includes(normalizedTarget);
+}
+
 function sendJson(res, statusCode, payload) {
   res.writeHead(statusCode, {
     "Content-Type": "application/json; charset=utf-8",
@@ -88,9 +109,14 @@ function collectBody(req, maxBytes = 1024 * 1024) {
 }
 
 async function sendContactEmail({ name, email, subject, message }) {
-  if (!SMTP_USER || !SMTP_PASS || !CONTACT_TO_EMAIL) {
+  if (!SMTP_USER || !SMTP_PASS) {
     return false;
   }
+
+  const safeName = escapeHtml(name);
+  const safeEmail = escapeHtml(email);
+  const safeSubject = escapeHtml(subject);
+  const safeMessage = escapeHtml(message).replace(/\n/g, "<br>");
 
   const transporter = nodemailer.createTransport({
     service: "gmail",
@@ -100,18 +126,64 @@ async function sendContactEmail({ name, email, subject, message }) {
     }
   });
 
-  await transporter.sendMail({
+  // Send thank-you mail to the user first; admin notification should not block it.
+  const userInfo = await transporter.sendMail({
     from: SMTP_USER,
-    to: CONTACT_TO_EMAIL,
-    replyTo: email,
-    subject: `[Contact Form] ${subject}`,
+    to: email,
+    subject: "Thank you for contacting Chandigarh Tourism",
     html:
-      `<h3>New Contact Message</h3>` +
-      `<p><strong>Name:</strong> ${name}</p>` +
-      `<p><strong>Email:</strong> ${email}</p>` +
-      `<p><strong>Subject:</strong> ${subject}</p>` +
-      `<p><strong>Message:</strong><br>${message.replace(/\n/g, "<br>")}</p>`
+      `<div style="margin:0;padding:24px;background:#f4f8ff;font-family:Arial,sans-serif;color:#16243a;">` +
+      `<div style="max-width:620px;margin:0 auto;background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #dfe8ff;">` +
+      `<div style="background:linear-gradient(135deg,#1d4ed8,#0f766e);padding:28px 24px;color:#ffffff;">` +
+      `<h1 style="margin:0;font-size:24px;line-height:1.3;">Thank You, ${safeName}!</h1>` +
+      `<p style="margin:10px 0 0;font-size:15px;opacity:0.95;">Your message has been received by Chandigarh Tourism.</p>` +
+      `</div>` +
+      `<div style="padding:22px 24px;">` +
+      `<p style="margin:0 0 14px;font-size:15px;line-height:1.6;">We appreciate you reaching out. Our team will review your message and respond soon.</p>` +
+      `<div style="background:#f8fbff;border:1px solid #e5edff;border-radius:10px;padding:14px 16px;">` +
+      `<p style="margin:0 0 8px;font-size:13px;color:#3a5174;text-transform:uppercase;letter-spacing:0.5px;">Your submission details</p>` +
+      `<p style="margin:0 0 6px;font-size:14px;"><strong>Subject:</strong> ${safeSubject}</p>` +
+      `<p style="margin:0;font-size:14px;"><strong>Message:</strong><br>${safeMessage}</p>` +
+      `</div>` +
+      `<p style="margin:16px 0 0;font-size:14px;color:#42526e;">Warm regards,<br><strong>Chandigarh Tourism Team</strong></p>` +
+      `</div>` +
+      `</div>` +
+      `</div>`
   });
+  appendContactLog(
+    `email_delivery_user: accepted=${JSON.stringify(userInfo.accepted || [])} rejected=${JSON.stringify(
+      userInfo.rejected || []
+    )} messageId=${userInfo.messageId || ""}\n`
+  );
+
+  if (!didAcceptRecipient(userInfo, email)) {
+    throw new Error("User thank-you email not accepted by SMTP server");
+  }
+
+  if (CONTACT_TO_EMAIL) {
+    try {
+      const adminInfo = await transporter.sendMail({
+        from: SMTP_USER,
+        to: CONTACT_TO_EMAIL,
+        replyTo: email,
+        subject: `[Contact Form] ${subject}`,
+        html:
+          `<h3>New Contact Message</h3>` +
+          `<p><strong>Name:</strong> ${safeName}</p>` +
+          `<p><strong>Email:</strong> ${safeEmail}</p>` +
+          `<p><strong>Subject:</strong> ${safeSubject}</p>` +
+          `<p><strong>Message:</strong><br>${safeMessage}</p>`
+      });
+      appendContactLog(
+        `email_delivery_admin: accepted=${JSON.stringify(adminInfo.accepted || [])} rejected=${JSON.stringify(
+          adminInfo.rejected || []
+        )} messageId=${adminInfo.messageId || ""}\n`
+      );
+    } catch (error) {
+      appendContactLog(`email_delivery_admin_error: ${error && error.message ? error.message : String(error)}\n`);
+      console.error("Admin contact email failed:", error && error.message ? error.message : error);
+    }
+  }
 
   return true;
 }
@@ -356,6 +428,9 @@ const server = http.createServer(async (req, res) => {
           const emailed = await sendContactEmail({ name, email, subject, message });
           sendRedirect(res, emailed ? "/contact.html?sent=1" : "/contact.html?sent=2");
         } catch (error) {
+          appendContactLog(
+            `email_delivery_user_error: ${error && error.message ? error.message : String(error)}\n`
+          );
           sendRedirect(res, "/contact.html?sent=2");
         }
       });
