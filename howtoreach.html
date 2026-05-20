@@ -375,9 +375,78 @@ th, td {
 				</div>
 			</footer>
 
-		<script>
-			(function ($) {
-				var maxFlights = 6;
+			<script>
+				(function ($) {
+					var maxFlights = 6;
+					var fallbackAirportOverview = {
+						airport: {
+							name: "Chandigarh Airport",
+							iata: "IXC",
+							distance_from_city_km: 11
+						},
+						summary: {
+							live_departures: 3,
+							live_arrivals: 3,
+							active_airlines: 4
+						},
+						airlines: [
+							{ name: "IndiGo", iata: "6E" },
+							{ name: "Air India", iata: "AI" },
+							{ name: "Vistara", iata: "UK" },
+							{ name: "SpiceJet", iata: "SG" }
+						],
+						departures: {
+							data: [
+								{
+									airline: { name: "IndiGo" },
+									flight: { iata: "6E 2045" },
+									arrival: { airport: "Delhi", iata: "DEL" },
+									departure: { scheduled: "2026-05-20T10:30:00+05:30", terminal: "T1", gate: "4" },
+									flight_status: "scheduled"
+								},
+								{
+									airline: { name: "Air India" },
+									flight: { iata: "AI 464" },
+									arrival: { airport: "Mumbai", iata: "BOM" },
+									departure: { scheduled: "2026-05-20T12:10:00+05:30", terminal: "T1", gate: "2" },
+									flight_status: "scheduled"
+								},
+								{
+									airline: { name: "SpiceJet" },
+									flight: { iata: "SG 8191" },
+									arrival: { airport: "Bengaluru", iata: "BLR" },
+									departure: { scheduled: "2026-05-20T14:05:00+05:30", terminal: "T1" },
+									flight_status: "scheduled"
+								}
+							]
+						},
+						arrivals: {
+							data: [
+								{
+									airline: { name: "Vistara" },
+									flight: { iata: "UK 706" },
+									departure: { airport: "Delhi", iata: "DEL" },
+									arrival: { scheduled: "2026-05-20T11:15:00+05:30", terminal: "T1", gate: "5" },
+									flight_status: "scheduled"
+								},
+								{
+									airline: { name: "IndiGo" },
+									flight: { iata: "6E 5932" },
+									departure: { airport: "Hyderabad", iata: "HYD" },
+									arrival: { scheduled: "2026-05-20T13:20:00+05:30", terminal: "T1", gate: "3" },
+									flight_status: "scheduled"
+								},
+								{
+									airline: { name: "Air India" },
+									flight: { iata: "AI 9824" },
+									departure: { airport: "Mumbai", iata: "BOM" },
+									arrival: { scheduled: "2026-05-20T15:00:00+05:30", terminal: "T1" },
+									flight_status: "scheduled"
+								}
+							]
+						},
+						updated_at: "2026-05-20T09:30:00+05:30"
+					};
 
 				function formatTime(value) {
 					if (!value) {
@@ -478,7 +547,7 @@ th, td {
 					$("#" + targetId).html("<li>" + message + "</li>");
 				}
 
-				function renderAirlines(airlines) {
+					function renderAirlines(airlines) {
 					var $target = $("#airline-list");
 
 					if (!airlines || !airlines.length) {
@@ -490,8 +559,27 @@ th, td {
 						return "<li>" + escapeHtml(airline.name + (airline.iata ? " (" + airline.iata + ")" : "")) + "</li>";
 					}).join("");
 
-					$target.html(html);
-				}
+						$target.html(html);
+					}
+
+					function applyAirportOverview(response) {
+						var departures = getFlightItems(response.departures);
+						var arrivals = getFlightItems(response.arrivals);
+						var airport = response.airport || {};
+						var summary = response.summary || {};
+
+						$("#air-departure-count").text(summary.live_departures != null ? summary.live_departures : departures.length);
+						$("#air-arrival-count").text(summary.live_arrivals != null ? summary.live_arrivals : arrivals.length);
+						$("#air-airline-count").text(summary.active_airlines != null ? summary.active_airlines : (response.airlines || []).length);
+						$("#airport-name").text(airport.name || "Chandigarh Airport");
+						$("#airport-code").text(airport.iata || "IXC");
+						$("#airport-distance").text((airport.distance_from_city_km || 11) + " km from downtown");
+						$("#airport-updated").text(formatTime(response.updated_at));
+
+						renderAirlines(response.airlines || []);
+						renderFlights("departure-list", departures, "departures");
+						renderFlights("arrival-list", arrivals, "arrivals");
+					}
 
 				function initializeAirportScrollAnimations() {
 					var elements = document.querySelectorAll(".air-reveal");
@@ -534,49 +622,25 @@ th, td {
 					$.ajax({
 						url: "/api/airport/overview",
 						dataType: "json",
-						success: function (response) {
-							if (response && response.error) {
-								var serverMessage = response.error + (response.hint ? " (" + response.hint + ")" : "");
-								$("#air-live-note").text(serverMessage);
-								renderError("departure-list", "Live departures are unavailable right now.");
-								renderError("arrival-list", "Live arrivals are unavailable right now.");
-								$("#airline-list").html("<li>" + escapeHtml(response.error) + "</li>");
+							success: function (response) {
+								if (response && response.error) {
+									applyAirportOverview(fallbackAirportOverview);
+									$("#air-live-note").text("Live API is unavailable right now, showing fallback airport data.");
+									$("#air-load-btn").prop("disabled", false).text("Retry Live Airport Data");
+									return;
+								}
+
+								applyAirportOverview(response);
+								$("#air-live-note").text("Live airport information loaded successfully.");
+								$("#air-load-btn").prop("disabled", false).text("Refresh Live Airport Data");
+							},
+							error: function (xhr) {
+								applyAirportOverview(fallbackAirportOverview);
+								$("#air-live-note").text("Could not load live API (" + runtimeHint + "). Showing fallback airport data.");
 								$("#air-load-btn").prop("disabled", false).text("Retry Live Airport Data");
-								return;
 							}
-
-							var departures = getFlightItems(response.departures);
-							var arrivals = getFlightItems(response.arrivals);
-							var airport = response.airport || {};
-							var summary = response.summary || {};
-
-							$("#air-departure-count").text(summary.live_departures != null ? summary.live_departures : departures.length);
-							$("#air-arrival-count").text(summary.live_arrivals != null ? summary.live_arrivals : arrivals.length);
-							$("#air-airline-count").text(summary.active_airlines != null ? summary.active_airlines : (response.airlines || []).length);
-							$("#airport-name").text(airport.name || "Chandigarh Airport");
-							$("#airport-code").text(airport.iata || "IXC");
-							$("#airport-distance").text((airport.distance_from_city_km || 11) + " km from downtown");
-							$("#airport-updated").text(formatTime(response.updated_at));
-
-							renderAirlines(response.airlines || []);
-							renderFlights("departure-list", departures, "departures");
-							renderFlights("arrival-list", arrivals, "arrivals");
-							$("#air-live-note").text("Live airport information loaded successfully.");
-							$("#air-load-btn").prop("disabled", false).text("Refresh Live Airport Data");
-						},
-						error: function (xhr) {
-							var apiError = "";
-							if (xhr && xhr.responseJSON && xhr.responseJSON.error) {
-								apiError = xhr.responseJSON.error;
-							}
-							$("#air-live-note").text(apiError || runtimeHint);
-							renderError("departure-list", "Live departures are unavailable right now.");
-							renderError("arrival-list", "Live arrivals are unavailable right now.");
-							$("#airline-list").html("<li>" + escapeHtml(apiError || "Airline data is unavailable right now.") + "</li>");
-							$("#air-load-btn").prop("disabled", false).text("Retry Live Airport Data");
-						}
-					});
-				}
+						});
+					}
 
 				initializeAirportScrollAnimations();
 				$("#air-load-btn").on("click", loadAirportOverview);
